@@ -42,12 +42,12 @@ end
 using GR
 inline("atom")
 # Snowflake
-axiom="-F"
-rules=Dict('F' => "F+F-F-F+F")
+axiom="F++F++F"
+rules=Dict('F' => "F-F++F-F")
 angle=60.0
-n=4
-snowflake = LSFractal(axiom,rules,angle,n)
-plot(snowflake)
+n=5
+snowflake2 = LSFractal(axiom,rules,angle,n)
+plot(snowflake2)
 GR.show()
 
 #Sierpinsky triangle
@@ -112,4 +112,13 @@ angle=120
 n=6
 STriangle2 = LSFractal(axiom,rules,angle,n)
 plot(STriangle2)
+GR.show()
+
+#Sierpinsky Median Curve
+axiom="L--F--L--F"
+rules=Dict('L'=>"+R-F-R+", 'R'=>"-L+F+L-")
+angle=45
+n=8
+SMedian = LSFractal(axiom,rules,angle,n)
+plot(SMedian)
 GR.show()
