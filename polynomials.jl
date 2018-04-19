@@ -79,59 +79,84 @@ function dubiner_base2(j::Integer,z,w)
 end
 
 using PolynomialBases
-function eval_Djacobi(x,n::Integer,α, β)
+"""
+djacobi(x,n::Integer,α, β)
+Evaluate the `n` order jacobi polynomial derivative
+at point x∈[-1,1]
+"""
+function djacobi(x,n::Integer,α, β)
     T = typeof((2+α+β)*x/2)
     a = zero(T)
     if n <= 0;return a;end
     return (n+α+β+1)/2*jacobi(x,n-1,α+1,β+1)
 end
 """
-eval_dubiner(z,w,j::Integer)
-Compute the dubiner polynomial of degree `j` at point (x,y)
+dubiner(x,y,n::Integer,m::Integer)
+Compute the dubiner polynomial of degree `n`,`m` at point (x,y)
 on the reference triangle ((0,0),(1,0),(0,1))
 """
-function eval_dubiner(x,y,j::Integer)
+function dubiner(x,y,n::Integer,m::Integer)
     #check domain
     @assert ((y>=0)&&(x>=0))&&(1>=x+y) "point not in domain"
     # Map to reference square
     ξ=2*x/(1-y)-1
     η=2*y-1
-    #Compute degrees
-    t=-3/2+(1/2)*sqrt(1+8*j)
-    n=((ceil(t)+1)*(ceil(t)+2))/2-j
     k=2*n+1
-    m=ceil(t)-n
     #Compute Dubiner_nm(ξ, η)
-    P=jacobi(ξ,Int(n),0,0)*jacobi(η, Int(m),k,0)*((1-η)/2)^n
+    P=jacobi(ξ,n,0,0)*jacobi(η, m,k,0)*((1-η)/2)^n
+    #normalize
     N=sqrt(2/((2*n+1)*(m+n+1)))
     return (2*P)/N
 end
-
 """
-eval_Ddubiner(z,w,j::Integer)
-Compute the gradient of dubiner polynomial of degree `j` at point (x,y)
+eval_dubiner(x,y,j::Integer)
+Evaluate the dubiner basis `j` at point (x,y)
 on the reference triangle ((0,0),(1,0),(0,1))
 """
-function eval_Ddubiner(x,y,j::Integer)
+function dubiner_basis(x,y,j::Integer)
+    #Compute degrees
+    t=-3/2+(1/2)*sqrt(1+8*j)
+    n=((ceil(t)+1)*(ceil(t)+2))/2-j
+    m=ceil(t)-n
+    #Compute Dubiner_nm(ξ, η)
+    return dubiner(x,y,Int(n),Int(m))
+end
+
+"""
+∇dubiner(x,y,n::Integer,m::Integer)
+Compute the gradient of dubiner polynomial of degree `(n,m)` at point (x,y)
+on the reference triangle ((0,0),(1,0),(0,1))
+"""
+function ∇dubiner(x,y,n::Integer,m::Integer)
     #check domain
     @assert ((y>=0)&&(x>=0))&&(1>=x+y) "point not in domain"
     # Map to reference square
     ξ=2*x/(1-y)-1
-    η=2*y-1
-    #Compute degrees
-    t=-3/2+(1/2)*sqrt(1+8*j)
-    n=Int(((ceil(t)+1)*(ceil(t)+2))/2-j)
     k=2*n+1
-    m=Int(ceil(t)-n)
+    η=2*y-1
     #Compute ∇Dubiner_nm(ξ, η)
-    Dφn = eval_Djacobi(ξ,n,0,0)
+    Dφn = djacobi(ξ,n,0,0)
     φn = jacobi(ξ,n,0,0)
     φm = jacobi(η,m,k,0)
-    Dφm = eval_Djacobi(η,m,k,0)
+    Dφm = djacobi(η,m,k,0)
     Px=2/(1-η)*Dφn*φm*((1-η)/2)^n
     N=sqrt(2/((2*n+1)*(m+n+1)))
     Py=(2*x/(1-y)^2*Dφn*((1-η)/2)^n-n*((1-η)/2)^(n-1)*φn)*φm + 2*φn*((1-η)/2)^n*Dφm
     return [(4*Px)/N,(2*Py)/N]
+end
+
+"""
+∇dubiner_basis(x,y,j::Integer)
+Compute the gradient of dubiner basis `j` at point (x,y)
+on the reference triangle ((0,0),(1,0),(0,1))
+"""
+function ∇dubiner_basis(x,y,j::Integer)
+    #Compute degrees
+    t=-3/2+(1/2)*sqrt(1+8*j)
+    n=Int(((ceil(t)+1)*(ceil(t)+2))/2-j)
+    m=Int(ceil(t)-n)
+    #Compute ∇Dubiner_nm(ξ, η)
+    return ∇dubiner(x,y,n,m)
 end
 
 """
